@@ -1,19 +1,21 @@
 # Wetube Reloaded
 
-## Global Router
+### Global Router
 
-/ -> Home
-/join -> Join
-/login -> Login
+/ -> Home  
+/join -> Join  
+/login -> Login  
 /search -> Search
 
 ### users
 
-/users/edit -> Edit User
-/users/delete -> Delete User
+/usrs/:id -> See Profile
+/users/edit -> Edit My Profile  
+/users/delete -> Delete My Profile
 
 ### videos
 
-/videos/watch -> Watch Video
-/videos/edit -> Edit Video
-/videos/delete -> Delete Video
+/videos/:id -> Watch Video  
+/videos/:id/upload -> Upload Video  
+/videos/:id/edit -> Edit Video  
+/videos/:id/delete -> Delete Video
