@@ -1,0 +1,10 @@
+extends base.pug
+include mixins/video
+
+block content 
+    h2 Welcome to Wetube!
+    hr
+    each item in ctrl_videos
+       +video(item)
+    else
+        li sorry Nothing found
