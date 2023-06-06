@@ -10,6 +10,7 @@ app.set("view engine", "pug"); //Use Pug
 app.set("views", process.cwd() + "/src/views"); //Pug 작동 디렉토리 설정
 app.set("x-powered-by", false);
 app.use(morgan("dev")); //Use Morgan
+app.use(express.urlencoded({ extended: true })); //express Post 사용
 
 app.use("/", globalRouter);
 app.use("/videos", videoRouter);
