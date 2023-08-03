@@ -1,49 +1,40 @@
-let ctrl_videos = [
-  {
-    title: "First Video",
-    rating: 5,
-    comments: 2,
-    createdAt: "2m ago",
-    views: 59,
-    id: 1,
-  },
-  {
-    title: "Second Video",
-    rating: 5,
-    comments: 10,
-    createdAt: "5m ago",
-    views: 20,
-    id: 2,
-  },
-  {
-    title: "Third Video",
-    rating: 3,
-    comments: 5,
-    createdAt: "10m ago",
-    views: 42,
-    id: 3,
-  },
-];
+import Video from "../models/Video";
 
 export const home = (req, res) => {
-  res.render("home", { pageTitle: "Home", ctrl_videos }); //render home.pug 2번째 인자는 템플릿에 보낼 변수 내용 지정
+  Video.find({})
+    .then((Video) => {
+      return res.render("home", { pageTitle: "Home", videos: [] }); //render home.pug 2번째 인자는 템플릿에 보낼 변수 내용 지정
+    })
+    .catch((err) => {
+      console.log(err);
+    });
 }; //export home
 
 export const watch = (req, res) => {
   const id = req.params.id;
-  const video = ctrl_videos[id - 1];
-  res.render("watch", { pageTitle: `Watching ${video.title}`, video });
+  return res.render("watch", { pageTitle: `Watching` });
 }; //export watch
 
 export const getEdit = (req, res) => {
   const { id } = req.params;
-  const video = ctrl_videos[id - 1];
-  res.render("edit", { pageTitle: `Editing Video : ${video.title}`, video });
+  return res.render("edit", {
+    pageTitle: `Editing Video`,
+  });
 }; //export edit
 
 export const postEdit = (req, res) => {
   const { id } = req.params;
-  const { title } = req.body;
-  ctrl_videos[id - 1].title = title;
+  const { title } = req.body; //form name
   return res.redirect(`/videos/${id}`);
 }; //Post 요청 처리
+
+export const getUpload = (req, res) => {
+  return res.render("upload", {
+    pageTitle: `Upload Video`,
+  });
+};
+
+export const postUpload = (req, res) => {
+  const { title } = req.body; //form name
+  return res.redirect("/");
+};
