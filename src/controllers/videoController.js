@@ -1,16 +1,9 @@
 import Video from "../models/Video";
 
 export const home = async (req, res) => {
-  try {
-    //async await >> promise 방식
-    console.log("Start");
-    const videos = await Video.find({}); //wait DB
-    console.log("Finish");
-    console.log(videos);
-    return res.render("home", { pageTitle: "Home", videos: [] }); //render home.pug 2번째 인자는 템플릿에 보낼 변수 내용 지정
-  } catch (error) {
-    return res.render("server-error", { error });
-  }
+  //async await >> promise 방식
+  const videos = await Video.find({}); //wait DB
+  return res.render("home", { pageTitle: "Home", videos }); //render home.pug 2번째 인자는 템플릿에 보낼 변수 내용 지정
 };
 
 export const watch = (req, res) => {
@@ -37,7 +30,20 @@ export const getUpload = (req, res) => {
   });
 };
 
-export const postUpload = (req, res) => {
-  const { title } = req.body; //form name
+export const postUpload = async (req, res) => {
+  const { title, description, hashtags } = req.body; //form name
+  await Video.create({
+    //save DB promice
+    //Create Video object
+    title,
+    description,
+    createAt: Date.now(),
+    hashtags: hashtags.split(",").map((word) => `#${word}`),
+    meta: {
+      views: 0,
+      rating: 0,
+    },
+  });
+
   return res.redirect("/");
 };
