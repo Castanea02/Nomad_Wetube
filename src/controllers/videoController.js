@@ -1,14 +1,17 @@
 import Video from "../models/Video";
 
-export const home = (req, res) => {
-  Video.find({})
-    .then((Video) => {
-      return res.render("home", { pageTitle: "Home", videos: [] }); //render home.pug 2번째 인자는 템플릿에 보낼 변수 내용 지정
-    })
-    .catch((err) => {
-      console.log(err);
-    });
-}; //export home
+export const home = async (req, res) => {
+  try {
+    //async await >> promise 방식
+    console.log("Start");
+    const videos = await Video.find({}); //wait DB
+    console.log("Finish");
+    console.log(videos);
+    return res.render("home", { pageTitle: "Home", videos: [] }); //render home.pug 2번째 인자는 템플릿에 보낼 변수 내용 지정
+  } catch (error) {
+    return res.render("server-error", { error });
+  }
+};
 
 export const watch = (req, res) => {
   const id = req.params.id;
