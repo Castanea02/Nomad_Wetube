@@ -1,16 +1,16 @@
-import express from "express"; //use Express
+import express from "express";
 import morgan from "morgan";
 import globalRouter from "./routers/globalRouter";
-import userRouter from "./routers/userRouter";
 import videoRouter from "./routers/videoRouter";
+import userRouter from "./routers/userRouter";
 
 const app = express();
-app.set("view engine", "pug"); //Use Pug
-app.set("views", process.cwd() + "/src/views"); //Pug 작동 디렉토리 설정
-app.set("x-powered-by", false);
-app.use(morgan("dev")); //Use Morgan
-app.use(express.urlencoded({ extended: true })); //express Post 사용
+const logger = morgan("dev");
 
+app.set("view engine", "pug");
+app.set("views", process.cwd() + "/src/views");
+app.use(logger);
+app.use(express.urlencoded({ extended: true }));
 app.use("/", globalRouter);
 app.use("/videos", videoRouter);
 app.use("/users", userRouter);
