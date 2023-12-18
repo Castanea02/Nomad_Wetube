@@ -2,6 +2,7 @@ import User from "../models/User";
 import bcrypt from "bcrypt";
 
 export const getJoin = (req, res) => res.render("join", { pageTitle: "Join" });
+
 export const postJoin = async (req, res) => {
   const { email, name, username, password, password2, location } = req.body;
   const exists = await User.exists({ $or: [{ username }, { email }] });
@@ -42,16 +43,19 @@ export const remove = (req, res) => res.send("Remove User");
 export const getLogin = (req, res) => {
   res.render("Login", { pageTitle: "Login" });
 };
+
 export const postLogin = async (req, res) => {
   const { username, password } = req.body;
   const pageTitle = "Login";
   const user = await User.findOne({ username });
+
   if (!user) {
     return res.status(400).render("login", {
       pageTitle,
       errorMessage: "Username이 일치하지 않음.",
     });
   }
+
   const ok = await bcrypt.compare(password, user.password);
   if (!ok) {
     return res.status(400).render("login", {
@@ -60,8 +64,11 @@ export const postLogin = async (req, res) => {
     });
   }
 
-  console.log(user.password);
+  req.session.loggedIn = true; //login proc (Session initialize)
+  req.session.user = user;
+  res.redirect("/");
 };
 
 export const logout = (req, res) => res.render("Log out");
+
 export const see = (req, res) => res.send("See User");
