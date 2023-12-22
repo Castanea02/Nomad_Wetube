@@ -115,8 +115,6 @@ export const finishGithubLogin = async (req, res) => {
       })
     ).json(); //Extract Json
 
-    console.log(userData);
-
     const emailData = await (
       await fetch(`${apiUrl}/user/emails`, {
         headers: {
@@ -167,22 +165,26 @@ export const getEdit = (req, res) => {
 export const postEdit = async (req, res) => {
   const {
     session: {
-      user: { _id },
+      user: { _id, avatarUrl },
     },
     body: { name, email, username, location },
+    file,
   } = req;
+  console.log(file);
 
   const exists = await User.exists({ $or: [{ username }, { email }] });
+  console.log(username);
   if (exists) {
     return res.status(400).render("edit-profile", {
       pageTitle: "edit-profile",
       errorMessage: "중복된 Email, Username",
     });
-  } //C
+  }
 
   const updateUser = await User.findByIdAndUpdate(
     _id,
     {
+      avatarUrl: file ? file.path : avatarUrl,
       name,
       email,
       username,
@@ -192,7 +194,49 @@ export const postEdit = async (req, res) => {
   ); //update User
 
   req.session.user = updateUser;
-
   res.redirect("/users/edit");
 };
+
+export const getChangePassword = (req, res) => {
+  if (req.session.user.socialOnly === true) {
+    return res.redirect("/");
+  }
+  return res.render("users/change-password", { pageTitle: "Change Password" });
+};
+export const postChangePassword = async (req, res) => {
+  const {
+    session: {
+      user: { _id, password },
+    },
+    body: { oldPw, newPw, confPw },
+  } = req; //req.body, req.session
+
+  const ok = await bcrypt.compare(oldPw, password);
+
+  if (!ok) {
+    return res.status(400).render("users/change-password", {
+      pageTitle: "Change Password",
+      errorMessage: "기존 비밀번호가 일치하지 않습니다.",
+    });
+  }
+
+  if (newPw !== confPw) {
+    return res.status(400).render("users/change-password", {
+      pageTitle: "Change Password",
+      errorMessage: "새로운 비밀번호가 일치하지 않습니다.",
+    });
+  }
+
+  const user = await User.findById(_id);
+  console.log(user.password);
+  user.password = newPw;
+  console.log(user.password);
+  await user.save();
+  console.log(user.password);
+
+  req.session.user.password = user.password; //세션 새로고침 >> DB 변경 후 현재 세션으로 내용 바꿔 넣기
+  //send notification
+  return res.redirect("/users/logout");
+};
+
 export const see = (req, res) => res.send("See User");
