@@ -9,7 +9,6 @@ import MongoStore from "connect-mongo"; //sessions Store
 
 const app = express();
 const logger = morgan("dev");
-
 app.set("view engine", "pug");
 app.set("views", process.cwd() + "/src/views");
 app.use(logger);
@@ -20,16 +19,13 @@ app.use(
     secret: process.env.COOKIE_SECRET,
     resave: false,
     saveUninitialized: false,
-    cookie: {
-      maxAge: 10000,
-    },
     store: MongoStore.create({ mongoUrl: process.env.DB_URL }),
   })
 );
 
 app.use(localsMiddleware);
 app.use("/", rootRouter);
-app.use("/videos", videoRouter);
-app.use("/users", userRouter);
+app.use("/videos", videoRouter); // /videos/~~~
+app.use("/users", userRouter); // /users/~~~
 
 export default app;

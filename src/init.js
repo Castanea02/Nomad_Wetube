@@ -1,4 +1,4 @@
-import "dotenv/config";
+import "dotenv/config"; //dotenv 사용 - env 파일 Import
 import "./db";
 import "./models/Video";
 import "./models/User";
