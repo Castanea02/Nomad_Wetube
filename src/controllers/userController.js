@@ -1,3 +1,4 @@
+import Video from "../models/Video";
 import User from "../models/User";
 import bcrypt from "bcrypt";
 
@@ -174,12 +175,12 @@ export const postEdit = async (req, res) => {
 
   const exists = await User.exists({ $or: [{ username }, { email }] });
   console.log(username);
-  if (exists) {
-    return res.status(400).render("edit-profile", {
-      pageTitle: "edit-profile",
-      errorMessage: "중복된 Email, Username",
-    });
-  }
+  // if (exists) {
+  //   return res.status(400).render("edit-profile", {
+  //     pageTitle: "edit-profile",
+  //     errorMessage: "중복된 Email, Username",
+  //   });
+  // }
 
   const updateUser = await User.findByIdAndUpdate(
     _id,
@@ -203,6 +204,7 @@ export const getChangePassword = (req, res) => {
   }
   return res.render("users/change-password", { pageTitle: "Change Password" });
 };
+
 export const postChangePassword = async (req, res) => {
   const {
     session: {
@@ -239,4 +241,22 @@ export const postChangePassword = async (req, res) => {
   return res.redirect("/users/logout");
 };
 
-export const see = (req, res) => res.send("See User");
+export const see = async (req, res) => {
+  const { id } = req.params;
+  const user = await User.findById(id).populate({
+    path: "videos",
+    populate: {
+      path: "owner",
+      model: "User",
+    },
+  }); //User DB <> videos
+
+  if (!user) {
+    return res.status(404).render("404", { pageTitle: "404 Not Found" });
+  }
+
+  return res.render("users/profile", {
+    pageTitle: `${user.name} Profile`,
+    user,
+  });
+};

@@ -9,10 +9,14 @@ const userSchema = new mongoose.Schema({
   password: { type: String },
   name: { type: String, required: true },
   location: String,
+  videos: [{ type: mongoose.Schema.Types.ObjectId, ref: "Video" }],
 });
 
 userSchema.pre("save", async function () {
-  this.password = await bcrypt.hash(this.password, 5); //Hashing
+  if (this.isModified("password")) {
+    //비밀번호를 수정하는 경우에만 해싱, Video 업로드시 원치않은 해시 발생
+    this.password = await bcrypt.hash(this.password, 5); //Hashing
+  }
 });
 
 const User = mongoose.model("User", userSchema);

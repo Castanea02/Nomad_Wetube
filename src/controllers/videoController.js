@@ -1,13 +1,16 @@
 import Video from "../models/Video"; //model 사용하기
+import User from "../models/User"; //model 사용하기
 
 export const home = async (req, res) => {
-  const videos = await Video.find({}).sort({ createdAt: "asc" }); //promise
-  return res.render("home", { pageTitle: "Home", videos: videos });
+  const videos = await Video.find({})
+    .sort({ createdAt: "desc" })
+    .populate("owner"); //promise
+  return res.render("home", { pageTitle: "Home", videos });
 };
 
 export const watch = async (req, res) => {
   const { id } = req.params;
-  const video = await Video.findById(id); //Video id로 찾기
+  const video = await Video.findById(id).populate("owner"); //Video id로 찾기 (populate = relation "Owner")
   if (!video) {
     return res.render("404", { pageTitle: "Video Not Found!" });
   }
@@ -17,18 +20,33 @@ export const watch = async (req, res) => {
 export const getEdit = async (req, res) => {
   const { id } = req.params;
   const video = await Video.findById(id); //Video id로 찾기
+  const {
+    user: { _id },
+  } = req.session;
   if (!video) {
     return res.render("404", { pageTitle: "Video Not Found!" });
   }
+
+  if (String(video.owner) !== String(_id)) {
+    return res.status(403).redirect("/");
+  }
+
   return res.render("edit", { pageTitle: `Edit ${video.title}`, video });
 };
 
 export const postEdit = async (req, res) => {
   const { id } = req.params;
   const { title, description, hashtags } = req.body;
+  const {
+    user: { _id },
+  } = req.session;
   const video = await Video.exists({ _id: id }); //Video true or false
   if (!video) {
     return res.status(404).render("404", { pageTitle: "Video Not Found!" });
+  }
+
+  if (String(video.owner) !== String(_id)) {
+    return res.status(403).redirect("/");
   }
 
   await Video.findByIdAndUpdate(id, {
@@ -46,14 +64,25 @@ export const getUpload = (req, res) => {
 };
 
 export const postUpload = async (req, res) => {
+  const {
+    user: { _id },
+  } = req.session;
+  const file = req.file;
   const { title, description, hashtags } = req.body;
   try {
-    await Video.create({
+    const newVideo = await Video.create({
       //promise create DB Video
       title,
       description,
+      fileUrl: file.path,
+      owner: _id,
       hashtags: Video.formatHashtags(hashtags), //,으로 구분 #으로 단어시작 Video 스키마에서 import formatHashtags
     });
+
+    const user = await User.findById(_id);
+    user.videos.push(newVideo._id); //유저별 올린 비디오 누적하여 배열형태로 저장
+    user.save();
+
     return res.redirect("/");
   } catch (error) {
     //Error 처리
@@ -66,6 +95,20 @@ export const postUpload = async (req, res) => {
 
 export const deleteVideo = async (req, res) => {
   const { id } = req.params;
+  const {
+    user: { _id },
+  } = req.session;
+
+  const video = await Video.findById(id);
+
+  if (!video) {
+    return res.status(404).render("404", { pageTitle: "Video Not Found!" });
+  }
+
+  if (String(video.owner) !== String(_id)) {
+    return res.status(403).redirect("/");
+  }
+
   await Video.findByIdAndDelete(id);
   return res.redirect("/");
 };
@@ -76,10 +119,9 @@ export const search = async (req, res) => {
   if (keyword) {
     videos = await Video.find({
       title: {
-        $regex: new RegExp(keyword, "i"), //정규표현식 검색
+        $regex: new RegExp(`${keyword}$`, "i"), //정규표현식 검색
       },
-    });
-    return res.render("search", { pageTitle: "Search", videos });
+    }).populate("owner");
   }
   return res.render("search", { pageTitle: "Search", videos });
 };
