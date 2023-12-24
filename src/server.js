@@ -8,7 +8,7 @@ import { localsMiddleware } from "./middlewares";
 import MongoStore from "connect-mongo"; //sessions Store
 
 const app = express();
-const logger = morgan("dev");
+const logger = morgan("short");
 app.set("view engine", "pug");
 app.set("views", process.cwd() + "/src/views");
 app.use(logger);
