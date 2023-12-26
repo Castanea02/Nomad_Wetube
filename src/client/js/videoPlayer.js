@@ -1,12 +1,26 @@
 const video = document.querySelector("video");
 const playBtn = document.getElementById("play");
+const playBtnIcon = playBtn.querySelector("i");
 const muteBtn = document.getElementById("mute");
+const muteBtnIcon = muteBtn.querySelector("i");
 const volumeRange = document.getElementById("volume");
 const currentTime = document.getElementById("currentTime");
 const totalTime = document.getElementById("totalTime");
+const timeline = document.getElementById("timeline");
+const fullScreenBtn = document.getElementById("fullScreen");
+const fullScreenIcon = fullScreenBtn.querySelector("i");
+const videoContainer = document.getElementById("videoContainer");
+const videoControls = document.getElementById("videoControls");
 
 let userVolume = 0.5;
 video.volume = userVolume;
+
+let controlsTimeout = null;
+let controlsMovementTimeout = null;
+
+const formatTime = (seconds) => {
+  return new Date(seconds * 1000).toISOString().substring(14, 19);
+};
 
 const handlePlay = (e) => {
   if (video.paused) {
@@ -14,7 +28,7 @@ const handlePlay = (e) => {
   } else {
     video.pause();
   }
-  playBtn.innerText = video.paused ? "Play" : "Pause";
+  playBtnIcon.classList = video.paused ? "fas fa-play" : "fas fa-pause";
 };
 
 const handleMute = (e) => {
@@ -23,7 +37,9 @@ const handleMute = (e) => {
   } else {
     video.muted = true;
   }
-  muteBtn.innerText = video.muted ? "Unmute" : "Mute";
+  muteBtnIcon.classList = video.muted
+    ? "fas fa-volume-mute"
+    : "fas fa-volume-up";
   volumeRange.value = video.muted ? 0 : userVolume;
 };
 
@@ -40,15 +56,70 @@ const handleVolumeChange = (e) => {
 };
 
 const handleLoadedMetadata = () => {
-  totalTime.innerText = Math.floor(video.duration); //비디오 전체 길이
+  totalTime.innerText = formatTime(Math.floor(video.duration)); //비디오 전체 길이
+  timeline.max = Math.floor(video.duration);
 };
 
 const handleTimeUpdate = () => {
-  currentTime.innerText = Math.floor(video.currentTime); //현재 재생 길이
+  currentTime.innerText = formatTime(Math.floor(video.currentTime)); //현재 재생 길이
+  timeline.value = Math.floor(video.currentTime);
+};
+
+const handleTimelineChange = (e) => {
+  const {
+    target: { value },
+  } = e;
+  video.currentTime = value;
+};
+
+const handleFullscreen = () => {
+  const fullscreen = document.fullscreenElement;
+
+  if (fullscreen) {
+    document.exitFullscreen();
+    fullScreenIcon.classList = "fas fa-expand";
+  } else {
+    videoContainer.requestFullscreen();
+    fullScreenIcon.classList = "fas fa-compress";
+  }
+};
+
+const hideControls = () => videoControls.classList.remove("showing");
+
+const handleMouseMove = () => {
+  //마우스 오버 후 3초 뒤 Hide
+  if (controlsTimeout) {
+    clearTimeout(controlsTimeout);
+    controlsTimeout = null;
+  }
+  if (controlsMovementTimeout) {
+    clearTimeout(controlsMovementTimeout);
+    controlsMovementTimeout = null;
+  }
+
+  videoControls.classList.add("showing");
+  controlsMovementTimeout = setTimeout(hideControls, 3000);
+};
+
+const handleMouseLeave = () => {
+  controlsTimeout = setTimeout(hideControls, 3000);
+};
+
+const handleKeyboard = (e) => {
+  if (e.code === "Space") handlePlay();
+  if (e.code === "KeyM") handleMute();
 };
 
 playBtn.addEventListener("click", handlePlay);
+videoContainer.addEventListener("click", handlePlay);
+
 muteBtn.addEventListener("click", handleMute);
+fullScreenBtn.addEventListener("click", handleFullscreen);
 volumeRange.addEventListener("input", handleVolumeChange);
+timeline.addEventListener("input", handleTimelineChange);
+
+document.addEventListener("keydown", handleKeyboard);
 video.addEventListener("loadedmetadata", handleLoadedMetadata);
 video.addEventListener("timeupdate", handleTimeUpdate);
+videoContainer.addEventListener("mousemove", handleMouseMove);
+videoContainer.addEventListener("mouseleave", handleMouseLeave);

@@ -116,10 +116,11 @@ export const deleteVideo = async (req, res) => {
 export const search = async (req, res) => {
   const { keyword } = req.query;
   let videos = [];
+
   if (keyword) {
     videos = await Video.find({
       title: {
-        $regex: new RegExp(`${keyword}$`, "i"), //정규표현식 검색
+        $regex: new RegExp(`${keyword}`, "i"), //정규표현식 검색
       },
     }).populate("owner");
   }
