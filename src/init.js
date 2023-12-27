@@ -2,6 +2,7 @@ import "dotenv/config"; //dotenv 사용 - env 파일 Import
 import "./db";
 import "./models/Video";
 import "./models/User";
+import "./models/Comment";
 import app from "./server";
 
 const PORT = 4000;

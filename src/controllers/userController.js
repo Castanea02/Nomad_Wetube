@@ -1,6 +1,7 @@
 import Video from "../models/Video";
 import User from "../models/User";
 import bcrypt from "bcrypt";
+import flash from "express-flash";
 
 export const getJoin = (req, res) => res.render("join", { pageTitle: "Join" });
 
@@ -135,7 +136,7 @@ export const finishGithubLogin = async (req, res) => {
     let user = await User.findOne({ email: emailObj.email });
 
     if (!user) {
-      const user = await User.create({
+      user = await User.create({
         avatarUrl: userData.avatar_url,
         name: userData.name,
         username: userData.login,
@@ -155,7 +156,10 @@ export const finishGithubLogin = async (req, res) => {
 };
 //===================================================================== End Github
 export const logout = (req, res) => {
-  req.session.destroy();
+  req.session.user = null;
+  req.session.loggedIn = false;
+
+  req.flash("info", "Logout");
   return res.redirect("/");
 };
 
@@ -200,6 +204,7 @@ export const postEdit = async (req, res) => {
 
 export const getChangePassword = (req, res) => {
   if (req.session.user.socialOnly === true) {
+    req.flash("error", "Can't change password");
     return res.redirect("/");
   }
   return res.render("users/change-password", { pageTitle: "Change Password" });
@@ -230,11 +235,9 @@ export const postChangePassword = async (req, res) => {
   }
 
   const user = await User.findById(_id);
-  console.log(user.password);
   user.password = newPw;
-  console.log(user.password);
   await user.save();
-  console.log(user.password);
+  req.flash("info", "Password Update");
 
   req.session.user.password = user.password; //세션 새로고침 >> DB 변경 후 현재 세션으로 내용 바꿔 넣기
   //send notification

@@ -15,16 +15,16 @@ header
                     a(href="/users/edit") Edit Profile
                 li
                     a(href="/users/logout")  Log Out
-                        if !loggedInUser.avatarUrl
+                    if !loggedInUser.avatarUrl
+                        li
+                            span 😁
+                    else
+                        if !loggedInUser.socialOnly
                             li
-                                span 😁
+                                img.header__avatar(src="/" + loggedInUser.avatarUrl)
                         else
-                            if !loggedInUser.socialOnly
-                                li
-                                    img.header__avatar(src="/" + loggedInUser.avatarUrl)
-                            else
-                                li
-                                    img.header__avatar(src=loggedInUser.avatarUrl)
+                            li
+                                img.header__avatar(src=loggedInUser.avatarUrl)
             else
                 li
                     a(href="/login")  Login                        

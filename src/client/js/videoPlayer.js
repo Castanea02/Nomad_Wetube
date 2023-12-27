@@ -110,6 +110,13 @@ const handleKeyboard = (e) => {
   if (e.code === "KeyM") handleMute();
 };
 
+const handleEnded = async () => {
+  const id = videoContainer.dataset;
+  await fetch(`/api/videos/${id.videoid}/view`, {
+    method: "POST",
+  });
+};
+
 playBtn.addEventListener("click", handlePlay);
 videoContainer.addEventListener("click", handlePlay);
 
@@ -118,8 +125,9 @@ fullScreenBtn.addEventListener("click", handleFullscreen);
 volumeRange.addEventListener("input", handleVolumeChange);
 timeline.addEventListener("input", handleTimelineChange);
 
-document.addEventListener("keydown", handleKeyboard);
+video.addEventListener("ended", handleEnded);
 video.addEventListener("loadedmetadata", handleLoadedMetadata);
 video.addEventListener("timeupdate", handleTimeUpdate);
 videoContainer.addEventListener("mousemove", handleMouseMove);
 videoContainer.addEventListener("mouseleave", handleMouseLeave);
+document.addEventListener("keydown", handleKeyboard);

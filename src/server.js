@@ -1,9 +1,11 @@
 import express from "express";
 import morgan from "morgan";
 import session from "express-session";
+import flash from "express-flash";
 import rootRouter from "./routers/rootRouter";
 import videoRouter from "./routers/videoRouter";
 import userRouter from "./routers/userRouter";
+import apiRouter from "./routers/apiRouter";
 import { localsMiddleware } from "./middlewares";
 import MongoStore from "connect-mongo"; //sessions Store
 
@@ -12,7 +14,8 @@ const logger = morgan("short");
 app.set("view engine", "pug");
 app.set("views", process.cwd() + "/src/views");
 app.use(logger);
-app.use(express.urlencoded({ extended: true }));
+app.use(express.urlencoded({ extended: true })); //form
+app.use(express.json()); //comment api request string <> object
 
 app.use(
   session({
@@ -23,11 +26,13 @@ app.use(
   })
 );
 
+app.use(flash());
 app.use(localsMiddleware);
 app.use("/uploads", express.static("uploads"));
 app.use("/static", express.static("assets"));
 app.use("/", rootRouter);
 app.use("/videos", videoRouter); // /videos/~~~
 app.use("/users", userRouter); // /users/~~~
+app.use("/api", apiRouter); // /api/~~~
 
 export default app;
